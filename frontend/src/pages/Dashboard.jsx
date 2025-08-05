@@ -25,8 +25,9 @@ const Dashboard = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log('Fetched chatbots:', res.data);
 
-        setChatbots(res.data.chatbots || []);
+        setChatbots(res.data || []);
       } catch (err) {
         console.error(err);
         toast.error('Failed to fetch chatbots');

@@ -20,9 +20,13 @@ const ChatbotPage = () => {
 
     try {
       const token = localStorage.getItem('token');
+
       const res = await axios.post(
-        `http://localhost:5000/api/chat/${id}`,
-        { message },
+        'http://localhost:5000/api/chatbots/query',
+        {
+          chatbotId: id,
+          question: message,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -30,11 +34,11 @@ const ChatbotPage = () => {
         }
       );
 
-      const botReply = res.data.response;
+      const botReply = res.data.answer;
       setChat([...newChat, { sender: 'bot', text: botReply }]);
     } catch (err) {
-      console.error(err);
-      toast.error('Failed to get response');
+      console.error('Chat error:', err);
+      toast.error('Failed to get response from bot');
       setChat(newChat); // keep user message even if bot fails
     } finally {
       setLoading(false);
@@ -49,9 +53,8 @@ const ChatbotPage = () => {
         {chat.map((msg, index) => (
           <div
             key={index}
-            className={`p-2 rounded ${
-              msg.sender === 'user' ? 'bg-blue-100 text-right' : 'bg-green-100 text-left'
-            }`}
+            className={`p-2 rounded ${msg.sender === 'user' ? 'bg-blue-100 text-right' : 'bg-green-100 text-left'
+              }`}
           >
             {msg.text}
           </div>
