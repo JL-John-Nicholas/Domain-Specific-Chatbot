@@ -11,7 +11,7 @@ const {
 } = require('../controllers/chatbotController');
 
 // Upload + create chatbot
-router.post('/create', protect, upload.single('file'), createChatbot);
+router.post('/create', protect, upload.single('pdf'), createChatbot);
 
 // Query chatbot (RAG)
 router.post('/query', protect, queryChatbot);
