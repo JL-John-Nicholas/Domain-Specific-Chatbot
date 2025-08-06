@@ -35,7 +35,7 @@ const App = () => {
               }
             />
             <Route
-              path=""
+              path="upload"
               element={
                 <ProtectedRoute>
                   <UploadPage />

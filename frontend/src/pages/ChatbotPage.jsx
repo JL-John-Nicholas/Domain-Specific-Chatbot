@@ -24,7 +24,7 @@ const ChatbotPage = () => {
       const res = await axios.post(
         'http://localhost:5000/api/chatbots/query',
         {
-          chatbotId: id,
+          chatbot_id: id,
           question: message,
         },
         {

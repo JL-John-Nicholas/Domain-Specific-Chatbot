@@ -7,11 +7,15 @@ const {
   createChatbot,
   getUserChatbots,
   deleteChatbot,
-  queryChatbot
+  queryChatbot,
+  addDocumentsToChatbot
 } = require('../controllers/chatbotController');
 
-// Upload + create chatbot
-router.post('/create', protect, upload.single('pdf'), createChatbot);
+// Upload multiple PDFs while creating chatbot
+router.post('/create', protect, upload.array('pdfs'), createChatbot);
+
+// Add more PDFs to existing chatbot
+router.post('/:id/add-documents', protect, upload.array('pdfs'), addDocumentsToChatbot);
 
 // Query chatbot (RAG)
 router.post('/query', protect, queryChatbot);

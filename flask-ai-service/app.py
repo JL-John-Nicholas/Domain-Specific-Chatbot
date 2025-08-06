@@ -20,21 +20,35 @@ def home():
 @app.route('/process-pdf', methods=['POST'])
 def process_pdf():
     data = request.json
-    file_url = data.get('file_url')
+    file_urls = data.get('file_urls')  # Expecting a list now
     chatbot_id = data.get('chatbot_id')
 
-    if not file_url or not chatbot_id:
-        return jsonify({"error": "Missing file_url or chatbot_id"}), 400
+    if not file_urls or not chatbot_id:
+        return jsonify({"error": "Missing file_urls or chatbot_id"}), 400
 
-    # Download file from S3 temporarily 
-    response = requests.get(file_url)
-    file_content = io.BytesIO(response.content)
+    if not isinstance(file_urls, list):
+        return jsonify({"error": "file_urls must be a list of URLs"}), 400
 
-    # Extract and store chunks
-    chunks = extract_text_chunks(file_content)
-    store_embeddings(chunks, chatbot_id)
+    total_chunks = 0
+    processed_docs = []
 
-    return jsonify({"message": "Document processed", "chunks": len(chunks)})
+    for url in file_urls:
+        try:
+            response = requests.get(url)
+            file_content = io.BytesIO(response.content)
+            chunks = extract_text_chunks(file_content)
+            store_embeddings(chunks, chatbot_id)
+            total_chunks += len(chunks)
+            processed_docs.append({"url": url, "chunks": len(chunks)})
+        except Exception as e:
+            processed_docs.append({"url": url, "error": str(e)})
+
+    return jsonify({
+        "message": "Documents processed",
+        "total_chunks": total_chunks,
+        "details": processed_docs
+    })
+
 
 @app.route('/query', methods=['POST'])
 def query_chatbot():

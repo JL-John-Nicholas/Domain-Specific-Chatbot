@@ -70,7 +70,7 @@ const Navbar = () => {
         {isAuthenticated ? (
           <>
             <span className="text-sm">Hi, {userEmail}</span>
-            <Link to="/" className="hover:underline">Upload</Link>
+            <Link to="/upload" className="hover:underline">Upload</Link>
             <Link to="/dashboard" className="hover:underline">Dashboard</Link>
             <button
               onClick={handleLogout}

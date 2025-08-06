@@ -23,7 +23,7 @@ const FileUpload = () => {
     if (!pdf || !name.trim()) return toast.warn('Please provide a name and select a PDF');
 
     const formData = new FormData();
-    formData.append('pdf', pdf);
+    formData.append('pdfs', pdf);
     formData.append('name', name); // ✅ Include name in the request
 
     try {
@@ -81,6 +81,7 @@ const FileUpload = () => {
         <input
           type="file"
           accept="application/pdf"
+          multiple
           onChange={handleChange}
           className="block w-full border p-2 mb-4"
           required
