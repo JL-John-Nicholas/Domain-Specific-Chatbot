@@ -4,26 +4,30 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const FileUpload = () => {
-  const [pdf, setPdf] = useState(null);
+  const [pdfs, setPdfs] = useState([]);
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type !== 'application/pdf') {
+    const selectedFiles = Array.from(e.target.files);
+    const validPdfs = selectedFiles.filter(file => file.type === 'application/pdf');
+
+    if (validPdfs.length === 0) {
       toast.error('Only PDF files are allowed');
       return;
     }
-    setPdf(file);
+
+    setPdfs(validPdfs);
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!pdf || !name.trim()) return toast.warn('Please provide a name and select a PDF');
+    if (pdfs.length === 0 || !name.trim()) return toast.warn('Please provide a name and select at least one PDF');
 
     const formData = new FormData();
-    formData.append('pdfs', pdf);
+    pdfs.forEach(pdf => formData.append('pdfs', pdf)); // ✅ Append all PDFs
     formData.append('name', name); // ✅ Include name in the request
 
     try {
@@ -68,7 +72,7 @@ const FileUpload = () => {
 
   return (
     <div className="max-w-lg mx-auto bg-white p-6 rounded shadow">
-      <h2 className="text-2xl font-bold mb-4 text-center">Upload a PDF</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Upload PDF(s)</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -89,9 +93,8 @@ const FileUpload = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition ${
-            loading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          className={`w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
         >
           {loading ? 'Uploading...' : 'Upload'}
         </button>
