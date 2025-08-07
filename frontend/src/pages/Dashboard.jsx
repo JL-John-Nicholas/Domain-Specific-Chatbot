@@ -39,6 +39,30 @@ const Dashboard = () => {
     fetchChatbots();
   }, [navigate]);
 
+  const handleDelete = async (chatbotId, e) => {
+    e.stopPropagation(); // Prevent triggering navigation to chatbot page
+
+    const confirm = window.confirm('Are you sure you want to delete this chatbot?');
+    if (!confirm) return;
+
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(`http://localhost:5000/api/chatbots/${chatbotId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Remove from state
+      setChatbots(prev => prev.filter(bot => bot._id !== chatbotId));
+      toast.success('Chatbot deleted successfully');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete chatbot');
+    }
+  };
+
+
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded">
       <h2 className="text-2xl font-bold mb-4 text-center">Your Chatbots</h2>
@@ -51,11 +75,22 @@ const Dashboard = () => {
           {chatbots.map((bot) => (
             <li
               key={bot._id}
-              onClick={() => navigate(`/chat/${bot._id}`)}
-              className="p-4 border rounded hover:bg-gray-100 cursor-pointer"
+              className="p-4 border rounded hover:bg-gray-100 flex justify-between items-center"
             >
-              <p className="font-semibold">Name: {bot.name || 'Untitled Chatbot'}</p>
-              <p className="text-sm text-gray-600">Created: {new Date(bot.createdAt).toLocaleString()}</p>
+              <div
+                className="cursor-pointer"
+                onClick={() => navigate(`/chat/${bot._id}`)}
+              >
+                <p className="font-semibold">Name: {bot.name || 'Untitled Chatbot'}</p>
+                <p className="text-sm text-gray-600">Created: {new Date(bot.createdAt).toLocaleString()}</p>
+              </div>
+
+              <button
+                onClick={(e) => handleDelete(bot._id, e)}
+                className="ml-4 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>
