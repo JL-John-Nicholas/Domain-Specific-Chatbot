@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -7,9 +6,11 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
   const [chatbots, setChatbots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [visibleDocs, setVisibleDocs] = useState({}); // Track which chatbot's docs are shown
+  const [documents, setDocuments] = useState({}); // Store documents for each chatbot
   const navigate = useNavigate();
 
-  const fileInputRefs = useRef({}); // Store input refs for each chatbot
+  const fileInputRefs = useRef({});
 
   useEffect(() => {
     const fetchChatbots = async () => {
@@ -41,8 +42,7 @@ const Dashboard = () => {
   const handleDelete = async (chatbotId, e) => {
     e.stopPropagation();
 
-    const confirm = window.confirm('Are you sure you want to delete this chatbot?');
-    if (!confirm) return;
+    if (!window.confirm('Are you sure you want to delete this chatbot?')) return;
 
     const token = localStorage.getItem('token');
     try {
@@ -61,6 +61,7 @@ const Dashboard = () => {
   };
 
   const handleFileChange = async (chatbotId, e) => {
+    e.stopPropagation(); // ⛔ prevent triggering chatbot navigation
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -79,13 +80,47 @@ const Dashboard = () => {
         },
       });
       toast.success('Documents added successfully');
+
+      // Optionally refresh documents if they were visible
+      if (visibleDocs[chatbotId]) {
+        await fetchDocuments(chatbotId);
+      }
     } catch (err) {
       console.error(err);
       toast.error('Failed to add documents');
     } finally {
-      // Reset the file input
       e.target.value = '';
     }
+  };
+
+  const fetchDocuments = async (chatbotId) => {
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await axios.get(`http://localhost:5000/api/chatbots/${chatbotId}/documents`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setDocuments((prev) => ({ ...prev, [chatbotId]: res.data }));
+    } catch (err) {
+      console.error('Error fetching documents:', err);
+      toast.error('Failed to load documents');
+    }
+  };
+
+  const toggleDocs = async (chatbotId, e) => {
+    e.stopPropagation();
+    const isVisible = visibleDocs[chatbotId];
+
+    if (!isVisible && !documents[chatbotId]) {
+      await fetchDocuments(chatbotId);
+    }
+
+    setVisibleDocs((prev) => ({
+      ...prev,
+      [chatbotId]: !prev[chatbotId],
+    }));
   };
 
   const triggerFileInput = (chatbotId, e) => {
@@ -107,33 +142,69 @@ const Dashboard = () => {
           {chatbots.map((bot) => (
             <li
               key={bot._id}
-              className="p-4 border rounded hover:bg-gray-100 flex justify-between items-center"
+              className="p-4 border rounded hover:bg-gray-100"
             >
-              <div
-                className="cursor-pointer"
-                onClick={() => navigate(`/chat/${bot._id}`)}
-              >
-                <p className="font-semibold">Name: {bot.name || 'Untitled Chatbot'}</p>
-                <p className="text-sm text-gray-600">Created: {new Date(bot.createdAt).toLocaleString()}</p>
+              <div className="flex justify-between items-center">
+                <div onClick={() => navigate(`/chat/${bot._id}`)} className="cursor-pointer">
+                  <p className="font-semibold text-blue-700 underline">Name: {bot.name || 'Untitled Chatbot'}</p>
+                  <p className="text-sm text-gray-600">Created: {new Date(bot.createdAt).toLocaleString()}</p>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent navigation
+                      triggerFileInput(bot._id, e);
+                    }}
+                    className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded"
+                  >
+                    Add Docs
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent navigation
+                      toggleDocs(bot._id, e);
+                    }}
+                    className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded"
+                  >
+                    {visibleDocs[bot._id] ? 'Hide PDFs' : 'View PDFs'}
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent navigation
+                      handleDelete(bot._id, e);
+                    }}
+                    className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={(e) => triggerFileInput(bot._id, e)}
-                  className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded"
-                >
-                  Add Docs
-                </button>
+              {/* PDF List */}
+              {visibleDocs[bot._id] && (
+                <ul className="mt-3 space-y-1">
+                  {(documents[bot._id] || []).map((doc) => (
+                    <li key={doc._id} className="text-sm text-blue-700 underline truncate">
+                      <a
+                        href={doc.s3Url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()} // 🛑 prevent navigate when clicking PDF
+                      >
+                        {decodeURIComponent(doc.s3Url.split('/').pop())}
+                      </a>
+                    </li>
+                  ))}
+                  {documents[bot._id]?.length === 0 && (
+                    <li className="text-sm text-gray-500">No documents found.</li>
+                  )}
+                </ul>
+              )}
 
-                <button
-                  onClick={(e) => handleDelete(bot._id, e)}
-                  className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
-                >
-                  Delete
-                </button>
-              </div>
-
-              {/* Hidden file input for document upload */}
+              {/* Hidden file input */}
               <input
                 type="file"
                 multiple
@@ -143,6 +214,7 @@ const Dashboard = () => {
                 style={{ display: 'none' }}
               />
             </li>
+
           ))}
         </ul>
       )}

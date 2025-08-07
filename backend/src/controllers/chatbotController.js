@@ -114,6 +114,25 @@ const addDocumentsToChatbot = async (req, res) => {
   }
 };
 
+const getChatbotDocuments = async (req, res) => {
+  try {
+    const chatbotId = req.params.id;
+    const userId = req.user.userId;
+
+    const chatbot = await Chatbot.findOne({ _id: chatbotId, user: userId });
+    if (!chatbot) {
+      return res.status(404).json({ message: 'Chatbot not found' });
+    }
+
+    const documents = await Document.find({ chatbot: chatbotId });
+    res.json(documents);
+  } catch (err) {
+    console.error('Error fetching documents:', err);
+    res.status(500).json({ message: 'Failed to fetch documents' });
+  }
+};
+
+
 
 const deleteChatbot = async (req, res) => {
   try {
@@ -161,5 +180,6 @@ module.exports = {
   getUserChatbots,
   deleteChatbot,
   queryChatbot,
-  addDocumentsToChatbot
+  addDocumentsToChatbot,
+  getChatbotDocuments
 };
