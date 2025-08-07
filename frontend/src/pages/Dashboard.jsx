@@ -1,5 +1,5 @@
 // src/pages/Dashboard.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -9,10 +9,11 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const fileInputRefs = useRef({}); // Store input refs for each chatbot
+
   useEffect(() => {
     const fetchChatbots = async () => {
       const token = localStorage.getItem('token');
-
       if (!token) {
         toast.error('Please login to view your dashboard');
         navigate('/login');
@@ -25,8 +26,6 @@ const Dashboard = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log('Fetched chatbots:', res.data);
-
         setChatbots(res.data || []);
       } catch (err) {
         console.error(err);
@@ -40,7 +39,7 @@ const Dashboard = () => {
   }, [navigate]);
 
   const handleDelete = async (chatbotId, e) => {
-    e.stopPropagation(); // Prevent triggering navigation to chatbot page
+    e.stopPropagation();
 
     const confirm = window.confirm('Are you sure you want to delete this chatbot?');
     if (!confirm) return;
@@ -53,7 +52,6 @@ const Dashboard = () => {
         },
       });
 
-      // Remove from state
       setChatbots(prev => prev.filter(bot => bot._id !== chatbotId));
       toast.success('Chatbot deleted successfully');
     } catch (err) {
@@ -62,6 +60,40 @@ const Dashboard = () => {
     }
   };
 
+  const handleFileChange = async (chatbotId, e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('pdfs', file);
+    }
+
+    const token = localStorage.getItem('token');
+
+    try {
+      await axios.post(`http://localhost:5000/api/chatbots/${chatbotId}/add-documents`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      toast.success('Documents added successfully');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to add documents');
+    } finally {
+      // Reset the file input
+      e.target.value = '';
+    }
+  };
+
+  const triggerFileInput = (chatbotId, e) => {
+    e.stopPropagation();
+    if (fileInputRefs.current[chatbotId]) {
+      fileInputRefs.current[chatbotId].click();
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded">
@@ -85,12 +117,31 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-600">Created: {new Date(bot.createdAt).toLocaleString()}</p>
               </div>
 
-              <button
-                onClick={(e) => handleDelete(bot._id, e)}
-                className="ml-4 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
-              >
-                Delete
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={(e) => triggerFileInput(bot._id, e)}
+                  className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded"
+                >
+                  Add Docs
+                </button>
+
+                <button
+                  onClick={(e) => handleDelete(bot._id, e)}
+                  className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+                >
+                  Delete
+                </button>
+              </div>
+
+              {/* Hidden file input for document upload */}
+              <input
+                type="file"
+                multiple
+                accept=".pdf"
+                ref={(el) => (fileInputRefs.current[bot._id] = el)}
+                onChange={(e) => handleFileChange(bot._id, e)}
+                style={{ display: 'none' }}
+              />
             </li>
           ))}
         </ul>
