@@ -131,52 +131,66 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded">
-      <h2 className="text-2xl font-bold mb-4 text-center">Your Chatbots</h2>
+    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-xl border border-gray-200">
+      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+        Your Chatbots
+      </h2>
+
       {loading ? (
-        <p className="text-center">Loading...</p>
+        <p className="text-center text-gray-500 animate-pulse">Loading...</p>
       ) : chatbots.length === 0 ? (
-        <p className="text-center text-gray-500">No chatbots found. Upload a PDF to create one.</p>
+        <p className="text-center text-gray-500">
+          No chatbots found. Upload a PDF to create one.
+        </p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-5">
           {chatbots.map((bot) => (
             <li
               key={bot._id}
-              className="p-4 border rounded hover:bg-gray-100"
+              className="p-5 bg-gray-50 border rounded-lg hover:shadow-md transition-shadow duration-200"
             >
-              <div className="flex justify-between items-center">
-                <div onClick={() => navigate(`/chat/${bot._id}`)} className="cursor-pointer">
-                  <p className="font-semibold text-blue-700 underline">Name: {bot.name || 'Untitled Chatbot'}</p>
-                  <p className="text-sm text-gray-600">Created: {new Date(bot.createdAt).toLocaleString()}</p>
+              {/* Bot Header */}
+              <div className="flex justify-between items-center flex-wrap gap-3">
+                <div
+                  onClick={() => navigate(`/chat/${bot._id}`, { state: { chatbotName: bot.name } })}
+                  className="cursor-pointer"
+                >
+                  <p className="font-semibold text-blue-600 hover:text-blue-800 underline text-lg">
+                    {bot.name || 'Untitled Chatbot'}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Created: {new Date(bot.createdAt).toLocaleString()}
+                  </p>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // prevent navigation
+                      e.stopPropagation();
                       triggerFileInput(bot._id, e);
                     }}
-                    className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded"
+                    className="px-4 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition"
                   >
                     Add Docs
                   </button>
 
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // prevent navigation
+                      e.stopPropagation();
                       toggleDocs(bot._id, e);
                     }}
-                    className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded"
+                    className="px-4 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm transition"
                   >
                     {visibleDocs[bot._id] ? 'Hide PDFs' : 'View PDFs'}
                   </button>
 
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // prevent navigation
+                      e.stopPropagation();
                       handleDelete(bot._id, e);
                     }}
-                    className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+                    className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md text-sm transition"
                   >
                     Delete
                   </button>
@@ -185,23 +199,31 @@ const Dashboard = () => {
 
               {/* PDF List */}
               {visibleDocs[bot._id] && (
-                <ul className="mt-3 space-y-1">
-                  {(documents[bot._id] || []).map((doc) => (
-                    <li key={doc._id} className="text-sm text-blue-700 underline truncate">
-                      <a
-                        href={doc.s3Url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()} // 🛑 prevent navigate when clicking PDF
+                <div className="mt-4 bg-gray-100 p-3 rounded-lg border border-gray-200">
+                  <p className="font-medium text-gray-700 mb-2">PDF Documents:</p>
+                  <ul className="space-y-1">
+                    {(documents[bot._id] || []).map((doc) => (
+                      <li
+                        key={doc._id}
+                        className="text-sm text-blue-700 hover:text-blue-900 underline truncate"
                       >
-                        {decodeURIComponent(doc.s3Url.split('/').pop())}
-                      </a>
-                    </li>
-                  ))}
-                  {documents[bot._id]?.length === 0 && (
-                    <li className="text-sm text-gray-500">No documents found.</li>
-                  )}
-                </ul>
+                        <a
+                          href={doc.s3Url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {decodeURIComponent(doc.s3Url.split('/').pop())}
+                        </a>
+                      </li>
+                    ))}
+                    {documents[bot._id]?.length === 0 && (
+                      <li className="text-sm text-gray-500">
+                        No documents found.
+                      </li>
+                    )}
+                  </ul>
+                </div>
               )}
 
               {/* Hidden file input */}
@@ -214,12 +236,12 @@ const Dashboard = () => {
                 style={{ display: 'none' }}
               />
             </li>
-
           ))}
         </ul>
       )}
     </div>
   );
+
 };
 
 export default Dashboard;

@@ -4,28 +4,38 @@ import { Link, Navigate } from 'react-router-dom';
 const LandingPage = () => {
   const token = localStorage.getItem('token');
 
-  // 🔁 Redirect logged-in users to dashboard or upload page
+  // Redirect logged-in users
   if (token) return <Navigate to="/dashboard" />;
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow rounded text-center">
-      <h1 className="text-3xl font-bold mb-4">Welcome to PDF Chatbot</h1>
-      <p className="mb-6 text-gray-700">
-        Upload your PDF documents and start chatting with them using AI. Our platform helps you quickly extract answers and insights from any document.
-      </p>
-      <div className="space-x-4">
-        <Link
-          to="/login"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        >
-          Login
-        </Link>
-        <Link
-          to="/register"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-        >
-          Register
-        </Link>
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-indigo-100 px-6">
+      <div className="max-w-3xl text-center bg-white shadow-lg rounded-2xl p-10 border border-gray-100">
+        {/* Heading */}
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+          Welcome to <span className="text-indigo-600">PDF Chatbot</span>
+        </h1>
+
+        {/* Subheading */}
+        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+          Upload your PDF documents and chat with them using AI.  
+          Get quick answers, insights, and summaries without reading the whole file.
+        </p>
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            to="/login"
+            className="px-6 py-3 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors font-medium"
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            className="px-6 py-3 text-indigo-600 border border-indigo-600 hover:bg-indigo-50 rounded-lg shadow-sm transition-colors font-medium"
+          >
+            Register
+          </Link>
+        </div>
       </div>
     </div>
   );

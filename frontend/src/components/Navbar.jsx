@@ -18,12 +18,12 @@ const Navbar = () => {
 
     try {
       const decoded = jwtDecode(token);
-      
+
       // Check token expiration
       if (decoded.exp * 1000 < Date.now()) {
         throw new Error('Token expired');
       }
-      
+
       setUserEmail(decoded.email || 'User');
       setIsAuthenticated(true);
     } catch (error) {
@@ -34,13 +34,9 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    // Initial check on mount
     checkAuthStatus();
-
-    // Set up interval to check auth every 5 seconds
     const intervalId = setInterval(checkAuthStatus, 5000);
 
-    // Listen for storage events (changes from other tabs)
     const handleStorageChange = (e) => {
       if (e.key === 'token') {
         checkAuthStatus();
@@ -59,32 +55,65 @@ const Navbar = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
     navigate('/login');
-    // Refresh to ensure all components reset
     window.location.reload();
   };
 
   return (
-    <nav className="bg-gray-800 text-white px-6 py-4 flex justify-between items-center">
-      <Link to="/" className="text-xl font-semibold">PDF Chatbot</Link>
-      <div className="space-x-4">
-        {isAuthenticated ? (
-          <>
-            <span className="text-sm">Hi, {userEmail}</span>
-            <Link to="/upload" className="hover:underline">Upload</Link>
-            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
-            <button
-              onClick={handleLogout}
-              className="hover:underline text-red-400"
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="hover:underline">Login</Link>
-            <Link to="/register" className="hover:underline">Register</Link>
-          </>
-        )}
+    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Brand */}
+          <Link
+            to="/"
+            className="text-lg font-bold text-gray-800 hover:text-indigo-600 transition-colors"
+          >
+            PDF Chatbot
+          </Link>
+
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-6">
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm text-gray-600">
+                  Hi, <span className="font-medium">{userEmail}</span>
+                </span>
+                <Link
+                  to="/upload"
+                  className="text-gray-600 hover:text-indigo-600 transition-colors"
+                >
+                  Upload
+                </Link>
+                <Link
+                  to="/dashboard"
+                  className="text-gray-600 hover:text-indigo-600 transition-colors"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-500 hover:text-red-600 transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-gray-600 hover:text-indigo-600 transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg shadow-sm transition-colors"
+                >
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </nav>
   );
