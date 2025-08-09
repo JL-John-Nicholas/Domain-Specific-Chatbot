@@ -51,7 +51,7 @@ const FileUpload = () => {
       );
 
       toast.success('PDF uploaded successfully');
-      navigate(`/chat/${res.data.chatbot_id}`);
+      navigate('/dashboard');
     } catch (err) {
       console.error('Upload error:', err);
 
