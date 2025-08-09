@@ -1,6 +1,6 @@
 flask
 flask-cors
-chromadb
+pinecone
 pypdf2
 requests
 python-dotenv

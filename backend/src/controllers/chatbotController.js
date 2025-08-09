@@ -142,8 +142,19 @@ const deleteChatbot = async (req, res) => {
     const chatbot = await Chatbot.findOne({ _id: chatbotId, user: userId });
     if (!chatbot) return res.status(404).json({ message: 'Chatbot not found' });
 
+    // 1️⃣ Call Flask service to delete embeddings
+    try {
+      await axios.post('http://localhost:5001/delete-embeddings', {
+        chatbot_id: chatbotId
+      });
+    } catch (flaskErr) {
+      console.error("Error deleting embeddings in Pinecone:", flaskErr.message);
+    }
+
+    // 2️⃣ Delete chatbot from DB
     await chatbot.deleteOne();
     res.json({ message: 'Chatbot deleted successfully' });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error deleting chatbot' });

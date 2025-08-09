@@ -64,5 +64,21 @@ def query_chatbot():
 
     return jsonify({"answer": answer, "sources": top_chunks})
 
+@app.route('/delete-embeddings', methods=['POST'])
+def delete_embeddings():
+    data = request.json
+    chatbot_id = data.get("chatbot_id")
+    if not chatbot_id:
+        return jsonify({"error": "chatbot_id is required"}), 400
+    
+    from utils.embedding_utils import delete_embeddings_by_chatbot
+    success = delete_embeddings_by_chatbot(chatbot_id)
+    
+    if success:
+        return jsonify({"message": "Embeddings deleted successfully"})
+    else:
+        return jsonify({"error": "Failed to delete embeddings"}), 500
+
+
 if __name__ == '__main__':
     app.run(port=5001, debug=True)
