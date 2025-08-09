@@ -1,6 +1,7 @@
 const Chatbot = require('../models/Chatbot');
 const Document = require('../models/Document');
 const axios = require('axios');
+const aws = require('aws-sdk');
 
 const createChatbot = async (req, res) => {
   let newChatbot;
@@ -132,7 +133,11 @@ const getChatbotDocuments = async (req, res) => {
   }
 };
 
-
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
+});
 
 const deleteChatbot = async (req, res) => {
   try {
@@ -142,7 +147,7 @@ const deleteChatbot = async (req, res) => {
     const chatbot = await Chatbot.findOne({ _id: chatbotId, user: userId });
     if (!chatbot) return res.status(404).json({ message: 'Chatbot not found' });
 
-    // 1️⃣ Call Flask service to delete embeddings
+    // 1️⃣ Delete embeddings in Pinecone via Flask service
     try {
       await axios.post('http://localhost:5001/delete-embeddings', {
         chatbot_id: chatbotId
@@ -151,9 +156,30 @@ const deleteChatbot = async (req, res) => {
       console.error("Error deleting embeddings in Pinecone:", flaskErr.message);
     }
 
-    // 2️⃣ Delete chatbot from DB
+    // 2️⃣ Find documents for this chatbot
+    const docs = await Document.find({ chatbot: chatbotId });
+
+    // 3️⃣ Delete files from S3
+    for (const doc of docs) {
+      try {
+        const key = decodeURIComponent(doc.s3Url.split('.amazonaws.com/')[1]);
+        await s3.deleteObject({
+          Bucket: process.env.S3_BUCKET,
+          Key: key
+        }).promise();
+        console.log(`Deleted file from S3: ${key}`);
+      } catch (s3Err) {
+        console.error(`Error deleting file from S3: ${doc.s3Url}`, s3Err.message);
+      }
+    }
+
+    // 4️⃣ Delete document records from DB
+    await Document.deleteMany({ chatbot: chatbotId });
+
+    // 5️⃣ Delete chatbot record from DB
     await chatbot.deleteOne();
-    res.json({ message: 'Chatbot deleted successfully' });
+
+    res.json({ message: 'Chatbot and associated files deleted successfully' });
 
   } catch (err) {
     console.error(err);
