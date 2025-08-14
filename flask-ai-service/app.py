@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, resources={r"/*": {"origins": "https://domain-specific-chatbot-backend.onrender.com"}})
 
 @app.route('/')
 def home():

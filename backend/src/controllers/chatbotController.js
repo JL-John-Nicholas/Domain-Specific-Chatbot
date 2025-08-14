@@ -149,7 +149,7 @@ const deleteChatbot = async (req, res) => {
 
     // 1️⃣ Delete embeddings in Pinecone via Flask service
     try {
-      await axios.post('http://localhost:5001/delete-embeddings', {
+      await axios.post(`${process.env.FLASK_URL}/delete-embeddings`, {
         chatbot_id: chatbotId
       });
     } catch (flaskErr) {
@@ -197,7 +197,7 @@ const queryChatbot = async (req, res) => {
     if (!chatbot) return res.status(404).json({ message: 'Chatbot not found' });
 
     // Forward question to Flask microservice
-    const flaskResponse = await axios.post('http://localhost:5001/query', {
+    const flaskResponse = await axios.post(`${process.env.FLASK_URL}/query`, {
       question,
       chatbot_id: chatbot_id,
     });
