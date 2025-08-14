@@ -3,6 +3,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate, Link } from 'react-router-dom';
+import API from "../services/api";
 
 const LoginPage = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -21,7 +22,7 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post('http://localhost:5000/api/auth/login', form);
+      const res = await API.post('/api/auth/login', form);
       const { token } = res.data;
 
       localStorage.setItem('token', token);

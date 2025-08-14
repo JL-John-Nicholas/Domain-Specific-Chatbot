@@ -2,6 +2,7 @@ import { useParams, useLocation } from 'react-router-dom'; // ⬅ add useLocatio
 import { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import API from "../services/api";
 
 const ChatbotPage = () => {
   const { id } = useParams();
@@ -23,8 +24,8 @@ const ChatbotPage = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(
-        'http://localhost:5000/api/chatbots/query',
+      const res = await API.post(
+        '/api/chatbots/query',
         {
           chatbot_id: id,
           question: message,

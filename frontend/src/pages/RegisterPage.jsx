@@ -3,6 +3,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate, Link } from 'react-router-dom';
+import API from '../services/api'; // Adjust the import path as necessary
 
 const RegisterPage = () => {
   const [form, setForm] = useState({
@@ -30,7 +31,7 @@ const RegisterPage = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post('http://localhost:5000/api/auth/signup', form, {
+      const res = await API.post('/api/auth/signup', form, {
         headers: { 'Content-Type': 'application/json' },
       });
 

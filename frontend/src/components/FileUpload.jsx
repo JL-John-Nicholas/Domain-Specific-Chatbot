@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import API from "../services/api";
 
 const FileUpload = () => {
   const [pdfs, setPdfs] = useState([]);
@@ -40,8 +41,8 @@ const FileUpload = () => {
         return navigate('/login');
       }
 
-      await axios.post(
-        'http://localhost:5000/api/chatbots/create',
+      await API.post(
+        '/api/chatbots/create',
         formData,
         {
           headers: {

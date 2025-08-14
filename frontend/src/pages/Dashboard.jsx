@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import API from "../services/api";
 
 const Dashboard = () => {
   const [chatbots, setChatbots] = useState([]);
@@ -22,7 +23,7 @@ const Dashboard = () => {
       }
 
       try {
-        const res = await axios.get('http://localhost:5000/api/chatbots', {
+        const res = await API.get('/api/chatbots', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -46,7 +47,7 @@ const Dashboard = () => {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:5000/api/chatbots/${chatbotId}`, {
+      await API.delete(`/api/chatbots/${chatbotId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -73,7 +74,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      await axios.post(`http://localhost:5000/api/chatbots/${chatbotId}/add-documents`, formData, {
+      await API.post(`/api/chatbots/${chatbotId}/add-documents`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -97,7 +98,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await axios.get(`http://localhost:5000/api/chatbots/${chatbotId}/documents`, {
+      const res = await API.get(`/api/chatbots/${chatbotId}/documents`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
