@@ -4,5 +4,5 @@ pinecone
 pypdf2
 requests
 python-dotenv
-google-genai
+google-generativeai
 gunicorn
