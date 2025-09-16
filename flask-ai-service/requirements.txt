@@ -7,7 +7,7 @@
 # google-generativeai
 # gunicorn
 
-flask==2.3.4
+flask==2.3.3
 flask-cors==3.0.10
 pinecone-client==2.2.2
 pypdf2==3.0.1
