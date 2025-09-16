@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from pinecone import Pinecone, ServerlessSpec
 import google.generativeai as genai
+from google.genai import types
 
 # Load environment variables
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
@@ -38,9 +39,10 @@ def get_embedding(text: str):
     """Generate embedding vector from Gemini."""
     try:
         emb = genai.embed_content(
-            model="models/embedding-001",
+            model="models/gemini-embedding-001",
             content=text,
-            task_type="RETRIEVAL_DOCUMENT"
+            task_type="RETRIEVAL_DOCUMENT",
+            output_dimensionality=768
         )
         return emb["embedding"]
     except Exception as e:
