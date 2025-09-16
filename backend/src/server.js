@@ -6,8 +6,24 @@ require('dotenv').config();
 const app = express();
 
 // CORS
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || '*';
-app.use(cors({ origin: ["http://localhost:3000", "https://domain-specific-chatbot.vercel.app"], credentials: true }));
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("❌ Blocked by CORS:", origin);
+      callback(null, false);
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options('/{*splat}', cors(corsOptions));
+
+
 
 // Middlewares
 app.use(express.json());
